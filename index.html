@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Sander Unite</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Sander Unite - MOBA Edition</title>
   <style>
     * {
       box-sizing: border-box;
@@ -11,33 +11,35 @@
       padding: 0;
       user-select: none;
       -webkit-user-select: none;
+      touch-action: none;
     }
     body {
-      background: #0d1117;
+      background: #06090e;
       color: #fff;
       font-family: 'Segoe UI', Roboto, sans-serif;
       overflow: hidden;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
       width: 100vw;
+      height: 100vh;
     }
     #game-container {
       position: relative;
       width: 100vw;
-      max-width: 960px;
-      aspect-ratio: 16 / 9;
+      height: 56.25vw; /* 16:9 */
+      max-height: 100vh;
+      max-width: 177.78vh;
       background: #000;
       overflow: hidden;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.8);
+      box-shadow: 0 0 35px rgba(0, 0, 0, 0.9);
     }
     canvas {
       width: 100%;
       height: 100%;
       display: block;
     }
+
     /* HUD Superior */
     .hud-top {
       position: absolute;
@@ -45,36 +47,92 @@
       left: 50%;
       transform: translateX(-50%);
       display: flex;
-      gap: 15px;
-      background: rgba(15, 23, 42, 0.75);
-      backdrop-filter: blur(8px);
-      padding: 6px 18px;
-      border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      font-weight: bold;
-      font-size: 14px;
-      z-index: 10;
-    }
-    .hud-stat {
-      display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 14px;
+      background: rgba(13, 20, 36, 0.85);
+      backdrop-filter: blur(8px);
+      padding: 6px 20px;
+      border-radius: 30px;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      font-weight: 700;
+      font-size: clamp(10px, 1.3vw, 14px);
+      z-index: 20;
     }
-    /* Controles Virtuales Mobile */
+    .energy-bar-container {
+      width: 120px;
+      height: 12px;
+      background: #1e293b;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.3);
+      position: relative;
+    }
+    .energy-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc);
+      transition: width 0.2s ease;
+    }
+
+    /* Tela de Início */
+    #start-screen {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle, rgba(15,23,42,0.88) 0%, rgba(3,7,18,0.97) 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 50;
+      backdrop-filter: blur(6px);
+    }
+    .title {
+      font-size: clamp(28px, 5vw, 46px);
+      font-weight: 900;
+      letter-spacing: 2px;
+      margin-bottom: 6px;
+      background: linear-gradient(135deg, #38bdf8, #818cf8, #f472b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .instructions {
+      font-size: clamp(11px, 1.5vw, 13px);
+      color: #94a3b8;
+      text-align: center;
+      max-width: 80%;
+      margin-bottom: 22px;
+      line-height: 1.4;
+    }
+    .btn-start {
+      padding: 12px 36px;
+      font-size: clamp(16px, 2vw, 20px);
+      font-weight: 800;
+      color: #fff;
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      border: 2px solid #7dd3fc;
+      border-radius: 40px;
+      cursor: pointer;
+      box-shadow: 0 0 25px rgba(2, 132, 199, 0.6);
+    }
+
+    /* Controles Touch */
+    .touch-controls {
+      display: none;
+    }
     .d-pad {
       position: absolute;
       bottom: 20px;
       left: 20px;
       width: 120px;
       height: 120px;
-      z-index: 10;
+      z-index: 15;
     }
     .btn-dir {
       position: absolute;
       width: 38px;
       height: 38px;
-      background: rgba(255, 255, 255, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.4);
+      background: rgba(15, 23, 42, 0.7);
+      border: 1.5px solid rgba(255, 255, 255, 0.4);
       border-radius: 50%;
       color: #fff;
       display: flex;
@@ -87,56 +145,119 @@
     .btn-left { top: 41px; left: 0; }
     .btn-right { top: 41px; right: 0; }
 
-    /* Botón Habilidad */
-    .btn-action {
+    /* Botões de Ação Direita */
+    .action-group {
       position: absolute;
       bottom: 20px;
       right: 20px;
-      width: 80px;
-      height: 80px;
+      display: flex;
+      align-items: flex-end;
+      gap: 15px;
+      z-index: 15;
+    }
+    .btn-attack {
+      width: 62px;
+      height: 62px;
       border-radius: 50%;
-      background: radial-gradient(circle, #38bdf8 0%, #0284c7 100%);
-      border: 3px solid #e0f2fe;
-      box-shadow: 0 0 15px rgba(56, 189, 248, 0.6);
+      background: radial-gradient(circle, #38bdf8, #0284c7);
+      border: 2px solid #bae6fd;
+      color: #fff;
+      font-size: 10px;
+      font-weight: bold;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      color: #fff;
-      font-size: 11px;
-      font-weight: bold;
-      z-index: 10;
-      cursor: pointer;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
     }
-    .btn-action:active {
-      transform: scale(0.92);
+    .btn-aura {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #f59e0b, #d97706);
+      border: 2px solid #fef08a;
+      color: #fff;
+      font-size: 10px;
+      font-weight: bold;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.4;
+      pointer-events: none;
+      box-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
+    }
+    .btn-aura.ready {
+      opacity: 1;
+      pointer-events: auto;
+      animation: pulse 1s infinite alternate;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); box-shadow: 0 0 15px #f59e0b; }
+      100% { transform: scale(1.08); box-shadow: 0 0 25px #fbbf24; }
+    }
+
+    .keyboard-hint {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.6);
+      z-index: 10;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
 
   <div id="game-container">
+    <!-- Menu Inicial -->
+    <div id="start-screen">
+      <div class="title">SANDER UNITE</div>
+      <div class="instructions">
+        Derrote os caminhantes para absorver energia até encher a Aura (1000).<br>
+        Dispare o Ataque de Aura no Nêmesis e desvie do seu Tornado.<br>
+        Encontre a poção secreta escondida para curar 1 vida!
+      </div>
+      <button class="btn-start" id="btn-start-game">START</button>
+    </div>
+
+    <!-- HUD -->
     <div class="hud-top">
-      <div class="hud-stat">STAGE: <span id="stage-val">1/3</span></div>
-      <div class="hud-stat">❤️ <span id="lives-val">2</span></div>
-      <div class="hud-stat">⏱️ <span id="time-val">02:00</span></div>
-      <div class="hud-stat">⚡ <span id="energy-val">0/1000</span></div>
+      <div>FASE: <span>1/3</span></div>
+      <div>❤️ <span id="lives-val">3</span></div>
+      <div>⏱️ <span id="time-val">02:00</span></div>
+      <div>AURA:</div>
+      <div class="energy-bar-container">
+        <div class="energy-bar-fill" id="energy-fill"></div>
+      </div>
+      <div><span id="energy-text">0</span>/1000</div>
     </div>
 
     <canvas id="gameCanvas" width="960" height="540"></canvas>
 
-    <!-- D-Pad -->
-    <div class="d-pad">
-      <div class="btn-dir btn-up" id="btn-up">▲</div>
-      <div class="btn-dir btn-left" id="btn-left">◀</div>
-      <div class="btn-dir btn-right" id="btn-right">▶</div>
-      <div class="btn-dir btn-down" id="btn-down">▼</div>
+    <!-- Controles Touch -->
+    <div class="touch-controls" id="touch-layer">
+      <div class="d-pad">
+        <div class="btn-dir btn-up" id="btn-up">▲</div>
+        <div class="btn-dir btn-left" id="btn-left">◀</div>
+        <div class="btn-dir btn-right" id="btn-right">▶</div>
+        <div class="btn-dir btn-down" id="btn-down">▼</div>
+      </div>
+
+      <div class="action-group">
+        <div class="btn-attack" id="btn-shoot">
+          <span style="font-size: 18px;">⚡</span>GOLPE
+        </div>
+        <div class="btn-aura" id="btn-aura-skill">
+          <span style="font-size: 20px;">🌀</span>AURA
+        </div>
+      </div>
     </div>
 
-    <!-- Habilidad -->
-    <div class="btn-action" id="btn-freeze">
-      <span style="font-size: 24px;">❄️</span>
-      CONGELAR
+    <div class="keyboard-hint" id="pc-hint">
+      Mover: [WASD / Setas] | Golpe: [J] | Ataque de Aura: [Espaço / K]
     </div>
   </div>
 
@@ -144,195 +265,373 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    // Cargar Imágenes
-    const bgImg = new Image();
-    bgImg.src = 'mapa.jpg';
+    // Imagens
+    const bgImg = new Image(); bgImg.src = 'mapa.jpg';
+    const sanderSheet = new Image(); sanderSheet.src = 'sander.png';
+    const nemesisImg = new Image(); nemesisImg.src = 'nemesis.png';
+    const auraImg = new Image(); auraImg.src = 'aura.jpg'; // Imagem especial do ataque de aura
 
-    const sanderSheet = new Image();
-    sanderSheet.src = 'sander.png';
+    // Detectar Touch
+    const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    if (isTouch) {
+      document.getElementById('touch-layer').style.display = 'block';
+      document.getElementById('pc-hint').style.display = 'none';
+    }
 
-    const nemesisImg = new Image();
-    nemesisImg.src = 'nemesis.png';
+    // Variáveis do Jogo
+    let gameRunning = false;
+    let timer = 120;
+    let lives = 3;
+    let auraEnergy = 0;
+    let potionUsed = false;
+    let activePotion = null; // {x, y} se cair no chão
 
-    // Estado del Jugador (Sander)
+    // Jogador
     const player = {
       x: 320,
-      y: 280,
-      width: 70,
-      height: 90,
-      speed: 4,
+      y: 330,
+      width: 46,
+      height: 60,
+      speed: 3.5,
       frameX: 0,
       frameY: 0,
       cols: 4,
       rows: 4,
       animTimer: 0,
       isMoving: false,
-      isAttacking: false
+      isAuraAttacking: false,
+      auraTimer: 0
     };
 
-    // Estado del Jefe / Enemigo (Némesis)
+    // Nêmesis
     const boss = {
-      x: 580,
-      y: 120,
-      width: 140,
-      height: 200,
-      frozen: false,
-      freezeTimer: 0
+      x: 640,
+      y: 190,
+      width: 70,
+      height: 105,
+      maxHp: 1000,
+      hp: 1000,
+      tornadoActive: false,
+      tornadoX: 0,
+      tornadoY: 0,
+      tornadoTimer: 0
     };
 
-    // Esferas de Energía / Orbes
-    const orbs = [
-      { x: 380, y: 180, active: true },
-      { x: 440, y: 310, active: true },
-      { x: 700, y: 150, active: true },
-      { x: 720, y: 250, active: true }
-    ];
+    // Tiros de Energia do Jogador
+    let playerShots = [];
 
-    let energy = 0;
+    // As Pessoinhas (Caminhantes)
+    const walkers = [];
+    const walkerColors = ['#f43f5e', '#a855f7', '#10b981', '#f59e0b', '#06b6d4'];
+    for (let i = 0; i < 6; i++) {
+      walkers.push({
+        x: 220 + Math.random() * 400,
+        y: 160 + Math.random() * 250,
+        vx: (Math.random() - 0.5) * 2,
+        vy: (Math.random() - 0.5) * 2,
+        color: walkerColors[i % walkerColors.length],
+        hasPotion: (i === 2), // O terceiro caminhante esconde a poção
+        alive: true,
+        respawnTimer: 0
+      });
+    }
+
+    // Controles
     const keys = {};
-
-    // Entrada Teclado
-    window.addEventListener('keydown', e => keys[e.key] = true);
+    window.addEventListener('keydown', e => {
+      keys[e.key] = true;
+      if (e.key.toLowerCase() === 'j' || e.key.toLowerCase() === 'z') shootEnergy();
+      if (e.code === 'Space' || e.key.toLowerCase() === 'k') triggerAuraAttack();
+    });
     window.addEventListener('keyup', e => keys[e.key] = false);
 
-    // Controles Táctiles
-    const bindTouch = (id, key) => {
+    function setupTouch(id, action) {
       const el = document.getElementById(id);
-      el.addEventListener('touchstart', (e) => { e.preventDefault(); keys[key] = true; });
-      el.addEventListener('touchend', (e) => { e.preventDefault(); keys[key] = false; });
-    };
-    bindTouch('btn-up', 'ArrowUp');
-    bindTouch('btn-down', 'ArrowDown');
-    bindTouch('btn-left', 'ArrowLeft');
-    bindTouch('btn-right', 'ArrowRight');
+      el.addEventListener('touchstart', e => { e.preventDefault(); action(true); }, { passive: false });
+      el.addEventListener('touchend', e => { e.preventDefault(); action(false); }, { passive: false });
+    }
+    setupTouch('btn-up', val => keys['ArrowUp'] = val);
+    setupTouch('btn-down', val => keys['ArrowDown'] = val);
+    setupTouch('btn-left', val => keys['ArrowLeft'] = val);
+    setupTouch('btn-right', val => keys['ArrowRight'] = val);
 
-    document.getElementById('btn-freeze').addEventListener('touchstart', triggerFreeze);
-    document.getElementById('btn-freeze').addEventListener('click', triggerFreeze);
+    document.getElementById('btn-shoot').addEventListener('touchstart', e => { e.preventDefault(); shootEnergy(); });
+    document.getElementById('btn-shoot').addEventListener('click', shootEnergy);
 
-    function triggerFreeze() {
-      if (energy >= 100) {
-        boss.frozen = true;
-        boss.freezeTimer = 180; // 3 segundos a 60fps
-        energy -= 100;
-        player.isAttacking = true;
-        setTimeout(() => player.isAttacking = false, 400);
+    document.getElementById('btn-aura-skill').addEventListener('touchstart', e => { e.preventDefault(); triggerAuraAttack(); });
+    document.getElementById('btn-aura-skill').addEventListener('click', triggerAuraAttack);
+
+    // Disparo básico para absorver energia
+    function shootEnergy() {
+      if (!gameRunning || player.isAuraAttacking) return;
+      playerShots.push({
+        x: player.x + player.width / 2,
+        y: player.y + player.height / 2,
+        vx: 6,
+        vy: 0,
+        radius: 7
+      });
+    }
+
+    // Ataque Especial de Aura
+    function triggerAuraAttack() {
+      if (!gameRunning || auraEnergy < 1000) return;
+      auraEnergy = 0;
+      updateAuraUI();
+      player.isAuraAttacking = true;
+      player.auraTimer = 60; // 1 segundo de efeito
+
+      // Atinge o Nêmesis se estiver no alcance
+      boss.hp = Math.max(0, boss.hp - 350);
+      if (boss.hp <= 0) {
+        setTimeout(() => alert('Vitória! Você derrotou Nêmesis com sua Aura!'), 100);
       }
     }
 
+    function updateAuraUI() {
+      document.getElementById('energy-fill').style.width = `${(auraEnergy / 1000) * 100}%`;
+      document.getElementById('energy-text').innerText = auraEnergy;
+      const auraBtn = document.getElementById('btn-aura-skill');
+      if (auraEnergy >= 1000) {
+        auraBtn.classList.add('ready');
+      } else {
+        auraBtn.classList.remove('ready');
+      }
+    }
+
+    // Início
+    document.getElementById('btn-start-game').addEventListener('click', () => {
+      document.getElementById('start-screen').style.display = 'none';
+      gameRunning = true;
+      setInterval(() => {
+        if (!gameRunning) return;
+        timer--;
+        const m = String(Math.floor(timer / 60)).padStart(2, '0');
+        const s = String(timer % 60).padStart(2, '0');
+        document.getElementById('time-val').innerText = `${m}:${s}`;
+        if (timer <= 0) {
+          gameRunning = false;
+          alert('Tempo esgotado!');
+        }
+      }, 1000);
+      requestAnimationFrame(gameLoop);
+    });
+
     function update() {
+      if (!gameRunning) return;
+
+      // Movimentação do Jogador
       player.isMoving = false;
+      if (keys['ArrowUp'] || keys['w'] || keys['W']) { player.y -= player.speed; player.isMoving = true; }
+      if (keys['ArrowDown'] || keys['s'] || keys['S']) { player.y += player.speed; player.isMoving = true; }
+      if (keys['ArrowLeft'] || keys['a'] || keys['A']) { player.x -= player.speed; player.isMoving = true; }
+      if (keys['ArrowRight'] || keys['d'] || keys['D']) { player.x += player.speed; player.isMoving = true; }
 
-      if (keys['ArrowUp'] || keys['w']) { player.y -= player.speed; player.isMoving = true; }
-      if (keys['ArrowDown'] || keys['s']) { player.y += player.speed; player.isMoving = true; }
-      if (keys['ArrowLeft'] || keys['a']) { player.x -= player.speed; player.isMoving = true; }
-      if (keys['ArrowRight'] || keys['d']) { player.x += player.speed; player.isMoving = true; }
-
-      // Límites de pantalla
-      player.x = Math.max(100, Math.min(canvas.width - 150, player.x));
+      player.x = Math.max(140, Math.min(canvas.width - 180, player.x));
       player.y = Math.max(120, Math.min(canvas.height - 120, player.y));
 
-      // Animación de Sprite (cuadrícula 4x4)
+      // Animação de sprite
       player.animTimer++;
-      if (player.animTimer % 8 === 0) {
-        if (player.isAttacking) {
-          player.frameX = 2; // Columna 3
-          player.frameY = 2; // Fila 3 (cuadro 11 con auras)
+      if (player.animTimer % 7 === 0) {
+        if (player.isAuraAttacking) {
+          player.frameX = 2; player.frameY = 2; // Frame 11
         } else if (player.isMoving) {
           player.frameX = (player.frameX + 1) % player.cols;
-          player.frameY = 0; // Fila 1 para caminar
+          player.frameY = 0;
         } else {
-          player.frameX = 0;
-          player.frameY = 0; // Idle
+          player.frameX = 0; player.frameY = 0;
         }
       }
 
-      // Descongelamiento
-      if (boss.frozen) {
-        boss.freezeTimer--;
-        if (boss.freezeTimer <= 0) boss.frozen = false;
+      if (player.isAuraAttacking) {
+        player.auraTimer--;
+        if (player.auraTimer <= 0) player.isAuraAttacking = false;
       }
 
-      // Recolección de orbes
-      orbs.forEach(orb => {
-        if (orb.active) {
-          const dist = Math.hypot((player.x + 35) - orb.x, (player.y + 45) - orb.y);
-          if (dist < 40) {
-            orb.active = false;
-            energy = Math.min(1000, energy + 50);
-            document.getElementById('energy-val').innerText = `${energy}/1000`;
+      // Atualiza Projéteis do Jogador
+      for (let i = playerShots.length - 1; i >= 0; i--) {
+        const shot = playerShots[i];
+        shot.x += shot.vx;
+
+        // Colisão com as pessoinhas
+        walkers.forEach(w => {
+          if (w.alive && Math.hypot(shot.x - w.x, shot.y - w.y) < 22) {
+            w.alive = false;
+            w.respawnTimer = 180; // Volta depois de 3 segundos
+            playerShots.splice(i, 1);
+
+            // Absorve Energia
+            auraEnergy = Math.min(1000, auraEnergy + 120);
+            updateAuraUI();
+
+            // Solta poção se for o que esconde a poção
+            if (w.hasPotion && !potionUsed && !activePotion) {
+              activePotion = { x: w.x, y: w.y };
+            }
           }
+        });
+
+        if (shot.x > canvas.width) playerShots.splice(i, 1);
+      }
+
+      // Atualiza Pessoinhas (Caminhantes)
+      walkers.forEach(w => {
+        if (w.alive) {
+          w.x += w.vx;
+          w.y += w.vy;
+          if (w.x < 180 || w.x > 750) w.vx *= -1;
+          if (w.y < 140 || w.y > 440) w.vy *= -1;
+        } else {
+          w.respawnTimer--;
+          if (w.respawnTimer <= 0) w.alive = true;
         }
       });
+
+      // Coleta da Poção
+      if (activePotion) {
+        if (Math.hypot((player.x + 20) - activePotion.x, (player.y + 30) - activePotion.y) < 30) {
+          activePotion = null;
+          potionUsed = true;
+          if (lives < 3) {
+            lives++;
+            document.getElementById('lives-val').innerText = lives;
+          }
+        }
+      }
+
+      // Ataque Tornado do Nêmesis
+      boss.tornadoTimer++;
+      if (boss.tornadoTimer > 240) { // Ativa a cada 4 segundos
+        boss.tornadoActive = true;
+        boss.tornadoX = boss.x;
+        boss.tornadoY = boss.y + 40;
+        boss.tornadoTimer = 0;
+      }
+
+      if (boss.tornadoActive) {
+        // Tornado vai na direção do jogador
+        const dx = player.x - boss.tornadoX;
+        const dy = player.y - boss.tornadoY;
+        const dist = Math.hypot(dx, dy);
+        boss.tornadoX += (dx / dist) * 2.8;
+        boss.tornadoY += (dy / dist) * 2.8;
+
+        // Acertou Sander
+        if (dist < 28) {
+          lives--;
+          document.getElementById('lives-val').innerText = lives;
+          boss.tornadoActive = false;
+          if (lives <= 0) {
+            gameRunning = false;
+            alert('Você perdeu todas as vidas! Tente novamente.');
+          }
+        }
+
+        // Dissipa depois de um tempo
+        if (dist > 450) boss.tornadoActive = false;
+      }
     }
 
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // 1. Dibujar Mapa de Fondo
+      // 1. Cenário
       if (bgImg.complete && bgImg.naturalWidth !== 0) {
         ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
-      } else {
-        ctx.fillStyle = '#1e293b';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
-      // 2. Dibujar Orbes de Energía
-      orbs.forEach(orb => {
-        if (orb.active) {
+      // 2. Poção no chão (se existir)
+      if (activePotion) {
+        ctx.fillStyle = '#10b981';
+        ctx.beginPath();
+        ctx.arc(activePotion.x, activePotion.y, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.font = '10px sans-serif';
+        ctx.fillText('🧪', activePotion.x - 6, activePotion.y + 4);
+      }
+
+      // 3. Desenhar Pessoinhas (Caminhantes)
+      walkers.forEach(w => {
+        if (w.alive) {
           ctx.beginPath();
-          ctx.arc(orb.x, orb.y, 14, 0, Math.PI * 2);
-          ctx.fillStyle = '#fbbf24';
-          ctx.shadowColor = '#f59e0b';
-          ctx.shadowBlur = 12;
+          ctx.arc(w.x, w.y, 10, 0, Math.PI * 2);
+          ctx.fillStyle = w.color;
           ctx.fill();
-          ctx.shadowBlur = 0;
+          // Brilho de energia ao redor
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 2;
+          ctx.stroke();
         }
       });
 
-      // 3. Dibujar Jefe (Némesis)
+      // 4. Projéteis de Energia
+      ctx.fillStyle = '#38bdf8';
+      playerShots.forEach(s => {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // 5. Nêmesis e sua barra de vida
       if (nemesisImg.complete && nemesisImg.naturalWidth !== 0) {
-        if (boss.frozen) {
-          ctx.save();
-          ctx.filter = 'brightness(1.2) hue-rotate(180deg)';
-          ctx.drawImage(nemesisImg, boss.x, boss.y, boss.width, boss.height);
-          ctx.restore();
-        } else {
-          ctx.drawImage(nemesisImg, boss.x, boss.y, boss.width, boss.height);
-        }
+        ctx.drawImage(nemesisImg, boss.x, boss.y, boss.width, boss.height);
+
+        // Barra de HP do Nêmesis
+        const barW = 80;
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(boss.x - 5, boss.y - 18, barW, 8);
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(boss.x - 5, boss.y - 18, (boss.hp / boss.maxHp) * barW, 8);
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(boss.x - 5, boss.y - 18, barW, 8);
       }
 
-      // 4. Dibujar Sander con Spritesheet recortada
-      if (sanderSheet.complete && sanderSheet.naturalWidth !== 0) {
+      // 6. Tornado Giratório do Nêmesis
+      if (boss.tornadoActive) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(boss.tornadoX, boss.tornadoY, 22, 0, Math.PI * 2);
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 6;
+        ctx.setLineDash([8, 8]);
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // 7. Sander (Sprite ou Ataque de Aura)
+      if (player.isAuraAttacking && auraImg.complete && auraImg.naturalWidth !== 0) {
+        // Efeito com a imagem mística de chamas azuis e círculos arcanos
+        ctx.drawImage(auraImg, player.x - 25, player.y - 35, player.width + 50, player.height + 40);
+
+        // Onda mística lançada ao Nêmesis
+        ctx.beginPath();
+        ctx.moveTo(player.x + player.width, player.y + 20);
+        ctx.lineTo(boss.x, boss.y + 40);
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.7)';
+        ctx.lineWidth = 10;
+        ctx.stroke();
+      } else if (sanderSheet.complete && sanderSheet.naturalWidth !== 0) {
         const spriteW = sanderSheet.naturalWidth / player.cols;
         const spriteH = sanderSheet.naturalHeight / player.rows;
-
         ctx.drawImage(
           sanderSheet,
-          player.frameX * spriteW, player.frameY * spriteH, spriteW, spriteH, // Origen
-          player.x, player.y, player.width, player.height                      // Destino
+          player.frameX * spriteW, player.frameY * spriteH, spriteW, spriteH,
+          player.x, player.y, player.width, player.height
         );
-      } else {
-        ctx.fillStyle = '#0284c7';
-        ctx.fillRect(player.x, player.y, player.width, player.height);
-      }
-
-      // 5. Círculo de congelamiento bajo el jefe
-      if (boss.frozen) {
-        ctx.beginPath();
-        ctx.ellipse(boss.x + boss.width / 2, boss.y + boss.height - 10, 50, 18, 0, 0, Math.PI * 2);
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 4;
-        ctx.stroke();
       }
     }
 
     function gameLoop() {
       update();
       draw();
-      requestAnimationFrame(gameLoop);
+      if (gameRunning) requestAnimationFrame(gameLoop);
     }
-
-    requestAnimationFrame(gameLoop);
+    bgImg.onload = draw;
   </script>
 </body>
 </html>
+

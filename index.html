@@ -1,682 +1,329 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>SANDER UNITE: Estação Paulista - MOBA Edition</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700;800&family=Teko:wght@600;700&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Sander Unite</title>
   <style>
-    :root {
-      --moba-blue: #00d2ff;
-      --moba-glow-blue: rgba(0, 210, 255, 0.6);
-      --moba-energy: #ffc400;
-      --moba-enemy-ring: #ff7700;
-      --moba-dark: rgba(14, 19, 39, 0.85);
-    }
-
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
       user-select: none;
       -webkit-user-select: none;
-      touch-action: none;
     }
-
-    html, body {
-      width: 100%;
-      height: 100%;
-      background: #000;
+    body {
+      background: #0d1117;
+      color: #fff;
+      font-family: 'Segoe UI', Roboto, sans-serif;
       overflow: hidden;
-      font-family: 'Rajdhani', sans-serif;
-    }
-
-    #game-wrapper {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      background: #000;
+      height: 100vh;
+      width: 100vw;
     }
-
-    canvas#gameCanvas {
-      display: block;
+    #game-container {
+      position: relative;
+      width: 100vw;
+      max-width: 960px;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      overflow: hidden;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.8);
+    }
+    canvas {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      display: block;
     }
-
-    /* BARRA SUPERIOR MOBA */
-    #top-bar {
+    /* HUD Superior */
+    .hud-top {
       position: absolute;
-      top: 12px;
+      top: 10px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
-      align-items: center;
-      gap: 14px;
-      background: var(--moba-dark);
-      border: 1.5px solid rgba(0, 210, 255, 0.4);
-      padding: 6px 24px;
-      border-radius: 24px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 10px rgba(0, 210, 255, 0.2);
-      z-index: 25;
+      gap: 15px;
+      background: rgba(15, 23, 42, 0.75);
       backdrop-filter: blur(8px);
+      padding: 6px 18px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      font-weight: bold;
+      font-size: 14px;
+      z-index: 10;
     }
-
-    .top-item {
+    .hud-stat {
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-size: 14px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
+      gap: 5px;
     }
-
-    .timer-core {
-      font-family: 'Teko', sans-serif;
-      font-size: 26px;
-      color: #fff;
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
-      min-width: 58px;
-      text-align: center;
-    }
-
-    /* MINIMAPA */
-    #minimap-container {
+    /* Controles Virtuales Mobile */
+    .d-pad {
       position: absolute;
-      top: 14px;
-      left: 18px;
-      width: 110px;
-      height: 60px;
-      background: rgba(12, 17, 36, 0.75);
-      border: 2px solid rgba(0, 210, 255, 0.45);
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-      z-index: 25;
-      backdrop-filter: blur(5px);
+      bottom: 20px;
+      left: 20px;
+      width: 120px;
+      height: 120px;
+      z-index: 10;
     }
-
-    #minimapCanvas {
-      width: 100%;
-      height: 100%;
-    }
-
-    /* CONTROLES TÁCTILES */
-    #touch-controls {
+    .btn-dir {
       position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      pointer-events: none;
-      z-index: 20;
-    }
-
-    #joystick-zone {
-      position: absolute;
-      bottom: 24px;
-      left: 28px;
-      width: 130px;
-      height: 130px;
+      width: 38px;
+      height: 38px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.4);
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(255, 255, 255, 0.06) 0%, rgba(0, 210, 255, 0.05) 100%);
-      border: 2px solid rgba(0, 210, 255, 0.35);
+      color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
-      pointer-events: auto;
-      box-shadow: 0 0 20px rgba(0, 210, 255, 0.15);
+      font-size: 16px;
     }
+    .btn-up { top: 0; left: 41px; }
+    .btn-down { bottom: 0; left: 41px; }
+    .btn-left { top: 41px; left: 0; }
+    .btn-right { top: 41px; right: 0; }
 
-    #joystick-thumb {
-      width: 54px;
-      height: 54px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, #fff, #99c7ff 50%, #0077ff);
-      border: 2px solid #fff;
-      box-shadow: 0 0 15px var(--moba-glow-blue);
-      transform: translate(0px, 0px);
-    }
-
-    #btn-freeze {
+    /* Botón Habilidad */
+    .btn-action {
       position: absolute;
-      bottom: 28px;
-      right: 32px;
-      width: 82px;
-      height: 82px;
+      bottom: 20px;
+      right: 20px;
+      width: 80px;
+      height: 80px;
       border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, #5ee7df, #b490ca);
-      border: 3px solid #fff;
+      background: radial-gradient(circle, #38bdf8 0%, #0284c7 100%);
+      border: 3px solid #e0f2fe;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.6);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       color: #fff;
-      font-weight: 800;
       font-size: 11px;
-      box-shadow: 0 0 24px rgba(94, 231, 223, 0.6);
-      pointer-events: auto;
+      font-weight: bold;
+      z-index: 10;
       cursor: pointer;
     }
-
-    #btn-freeze:active {
+    .btn-action:active {
       transform: scale(0.92);
-    }
-
-    /* PANTALLA OVERLAY / INICIO */
-    #overlay-screen {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(4, 7, 18, 0.92);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-      backdrop-filter: blur(10px);
-    }
-
-    .welcome-title {
-      font-family: 'Teko', sans-serif;
-      font-size: 48px;
-      letter-spacing: 2px;
-      color: #fff;
-      line-height: 1;
-      text-shadow: 0 0 16px var(--moba-blue);
-    }
-
-    .welcome-sub {
-      font-size: 14px;
-      font-weight: 700;
-      color: #d7e2ff;
-      letter-spacing: 2px;
-      margin-bottom: 24px;
-    }
-
-    .btn-main-play {
-      background: linear-gradient(90deg, #ff7b00 0%, #ffb300 100%);
-      border: 2px solid #fff;
-      border-radius: 30px;
-      color: #fff;
-      padding: 12px 48px;
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: 1.5px;
-      cursor: pointer;
-      box-shadow: 0 0 20px rgba(255, 123, 0, 0.7);
-    }
-
-    .btn-main-play:active {
-      transform: scale(0.95);
-    }
-
-    /* AVISO ORIENTACIÓN VERTICAL */
-    #rotate-warning {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: #070913;
-      color: #fff;
-      z-index: 200;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 24px;
-    }
-
-    @media (orientation: portrait) {
-      #rotate-warning {
-        display: flex;
-      }
     }
   </style>
 </head>
 <body>
 
-  <!-- Alerta para girar a horizontal -->
-  <div id="rotate-warning">
-    <h2 style="font-family: 'Teko', sans-serif; font-size: 38px; margin-bottom: 8px; color: var(--moba-blue);">GIRA EL TELÉFONO</h2>
-    <p style="color: #bbb; font-size: 15px;">Para jugar en modo MOBA, activa el giro automático y pon el dispositivo en horizontal.</p>
-  </div>
-
-  <div id="game-wrapper">
-    <!-- Minimapa -->
-    <div id="minimap-container">
-      <canvas id="minimapCanvas" width="110" height="60"></canvas>
+  <div id="game-container">
+    <div class="hud-top">
+      <div class="hud-stat">STAGE: <span id="stage-val">1/3</span></div>
+      <div class="hud-stat">❤️ <span id="lives-val">2</span></div>
+      <div class="hud-stat">⏱️ <span id="time-val">02:00</span></div>
+      <div class="hud-stat">⚡ <span id="energy-val">0/1000</span></div>
     </div>
 
-    <!-- HUD Superior -->
-    <div id="top-bar">
-      <div class="top-item" style="color: #ff3366;">
-        <span>VIDAS:</span>
-        <span id="h-lives" style="font-size: 16px;">❤️❤️</span>
-      </div>
-      <div class="timer-core" id="h-time">02:00</div>
-      <div class="top-item" style="color: var(--moba-energy);">
-        <span>ENERGÍA:</span>
-        <span id="h-energy">0</span>/1000
-      </div>
+    <canvas id="gameCanvas" width="960" height="540"></canvas>
+
+    <!-- D-Pad -->
+    <div class="d-pad">
+      <div class="btn-dir btn-up" id="btn-up">▲</div>
+      <div class="btn-dir btn-left" id="btn-left">◀</div>
+      <div class="btn-dir btn-right" id="btn-right">▶</div>
+      <div class="btn-dir btn-down" id="btn-down">▼</div>
     </div>
 
-    <!-- Canvas Principal -->
-    <canvas id="gameCanvas" width="800" height="450"></canvas>
-
-    <!-- Controles en Pantalla -->
-    <div id="touch-controls">
-      <div id="joystick-zone">
-        <div id="joystick-thumb"></div>
-      </div>
-      <div id="btn-freeze">
-        <span>CONGELAR</span>
-      </div>
-    </div>
-
-    <!-- Pantalla de Inicio -->
-    <div id="overlay-screen">
-      <div class="welcome-title">SANDER UNITE</div>
-      <div class="welcome-sub">ESTAÇÃO PAULISTA • MOBA EDITION</div>
-      <button class="btn-main-play" id="btn-start">JUGAR</button>
+    <!-- Habilidad -->
+    <div class="btn-action" id="btn-freeze">
+      <span style="font-size: 24px;">❄️</span>
+      CONGELAR
     </div>
   </div>
 
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    const mCanvas = document.getElementById('minimapCanvas');
-    const mCtx = mCanvas.getContext('2d');
 
-    let gameState = 'intro';
-    let energyScore = 0;
-    let roundTime = 120;
-    let lives = 2;
-    let timerInterval = null;
+    // Cargar Imágenes
+    const bgImg = new Image();
+    bgImg.src = 'mapa.jpg';
 
-    // Entidades
-    const sander = {
-      x: 160,
-      y: 225,
-      radius: 18,
-      speed: 3.8,
-      vx: 0,
-      vy: 0,
-      freezeTimer: 0,
-      animTick: 0
+    const sanderSheet = new Image();
+    sanderSheet.src = 'sander.png';
+
+    const nemesisImg = new Image();
+    nemesisImg.src = 'nemesis.png';
+
+    // Estado del Jugador (Sander)
+    const player = {
+      x: 320,
+      y: 280,
+      width: 70,
+      height: 90,
+      speed: 4,
+      frameX: 0,
+      frameY: 0,
+      cols: 4,
+      rows: 4,
+      animTimer: 0,
+      isMoving: false,
+      isAttacking: false
     };
 
+    // Estado del Jefe / Enemigo (Némesis)
     const boss = {
-      x: 640,
-      y: 225,
-      radius: 26,
-      speed: 1.35,
-      wingTick: 0
+      x: 580,
+      y: 120,
+      width: 140,
+      height: 200,
+      frozen: false,
+      freezeTimer: 0
     };
 
-    let walkers = [];
-    const walkerColors = ['#00e5ff', '#ffb300', '#00ff9d', '#ff3366', '#a855f7'];
+    // Esferas de Energía / Orbes
+    const orbs = [
+      { x: 380, y: 180, active: true },
+      { x: 440, y: 310, active: true },
+      { x: 700, y: 150, active: true },
+      { x: 720, y: 250, active: true }
+    ];
 
-    function initWalkers() {
-      walkers = [];
-      for (let i = 0; i < 14; i++) {
-        walkers.push({
-          x: 140 + Math.random() * 520,
-          y: 60 + Math.random() * 330,
-          radius: 7,
-          vx: (Math.random() - 0.5) * 1.6,
-          vy: (Math.random() - 0.5) * 1.6,
-          color: walkerColors[i % walkerColors.length],
-          float: Math.random() * Math.PI
-        });
-      }
-    }
-
-    // Audio SFX sintético Web Audio
-    let audioCtx = null;
-    function playTone(freq, type, dur, vol = 0.12) {
-      try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + dur);
-      } catch (e) {}
-    }
-
-    // Controles Touch - Joystick virtual
-    const joyZone = document.getElementById('joystick-zone');
-    const joyThumb = document.getElementById('joystick-thumb');
-    let touchId = null;
-    let joyCenter = { x: 0, y: 0 };
-
-    joyZone.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      const touch = e.changedTouches[0];
-      touchId = touch.identifier;
-      const rect = joyZone.getBoundingClientRect();
-      joyCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-      handleJoyMove(touch.clientX, touch.clientY);
-    }, { passive: false });
-
-    window.addEventListener('touchmove', (e) => {
-      if (touchId === null) return;
-      for (let i = 0; i < e.changedTouches.length; i++) {
-        if (e.changedTouches[i].identifier === touchId) {
-          handleJoyMove(e.changedTouches[i].clientX, e.changedTouches[i].clientY);
-          break;
-        }
-      }
-    }, { passive: false });
-
-    function endJoy(e) {
-      if (touchId === null) return;
-      for (let i = 0; i < e.changedTouches.length; i++) {
-        if (e.changedTouches[i].identifier === touchId) {
-          touchId = null;
-          sander.vx = 0;
-          sander.vy = 0;
-          joyThumb.style.transform = 'translate(0px, 0px)';
-          break;
-        }
-      }
-    }
-    window.addEventListener('touchend', endJoy);
-    window.addEventListener('touchcancel', endJoy);
-
-    function handleJoyMove(clientX, clientY) {
-      const dx = clientX - joyCenter.x;
-      const dy = clientY - joyCenter.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const maxDist = 45;
-      const angle = Math.atan2(dy, dx);
-      const clampedDist = Math.min(dist, maxDist);
-
-      const thumbX = Math.cos(angle) * clampedDist;
-      const thumbY = Math.sin(angle) * clampedDist;
-      joyThumb.style.transform = `translate(${thumbX}px, ${thumbY}px)`;
-
-      const intensity = clampedDist / maxDist;
-      sander.vx = Math.cos(angle) * sander.speed * intensity;
-      sander.vy = Math.sin(angle) * sander.speed * intensity;
-    }
-
-    // Botón Habilidad Congelar
-    document.getElementById('btn-freeze').addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      useFreezeSkill();
-    });
-
-    function useFreezeSkill() {
-      if (sander.freezeTimer <= 0) {
-        sander.freezeTimer = 180; // 3 segundos a 60fps
-        playTone(320, 'triangle', 0.4, 0.2);
-      }
-    }
-
-    // Controles teclado (PC / depuración)
+    let energy = 0;
     const keys = {};
-    window.addEventListener('keydown', (e) => {
-      keys[e.key.toLowerCase()] = true;
-      if (e.key === ' ' || e.key === 'k') useFreezeSkill();
-    });
-    window.addEventListener('keyup', (e) => {
-      keys[e.key.toLowerCase()] = false;
-    });
 
-    // Iniciar Juego
-    document.getElementById('btn-start').addEventListener('click', startGame);
+    // Entrada Teclado
+    window.addEventListener('keydown', e => keys[e.key] = true);
+    window.addEventListener('keyup', e => keys[e.key] = false);
 
-    function startGame() {
-      document.getElementById('overlay-screen').style.display = 'none';
-      energyScore = 0;
-      roundTime = 120;
-      lives = 2;
-      sander.x = 160;
-      sander.y = 225;
-      boss.x = 640;
-      boss.y = 225;
-      sander.freezeTimer = 0;
-      initWalkers();
-      updateHUD();
-      gameState = 'playing';
-      playTone(520, 'sine', 0.25, 0.15);
+    // Controles Táctiles
+    const bindTouch = (id, key) => {
+      const el = document.getElementById(id);
+      el.addEventListener('touchstart', (e) => { e.preventDefault(); keys[key] = true; });
+      el.addEventListener('touchend', (e) => { e.preventDefault(); keys[key] = false; });
+    };
+    bindTouch('btn-up', 'ArrowUp');
+    bindTouch('btn-down', 'ArrowDown');
+    bindTouch('btn-left', 'ArrowLeft');
+    bindTouch('btn-right', 'ArrowRight');
 
-      if (timerInterval) clearInterval(timerInterval);
-      timerInterval = setInterval(() => {
-        if (gameState === 'playing') {
-          roundTime--;
-          updateHUD();
-          if (roundTime <= 0) gameOver(true);
-        }
-      }, 1000);
+    document.getElementById('btn-freeze').addEventListener('touchstart', triggerFreeze);
+    document.getElementById('btn-freeze').addEventListener('click', triggerFreeze);
+
+    function triggerFreeze() {
+      if (energy >= 100) {
+        boss.frozen = true;
+        boss.freezeTimer = 180; // 3 segundos a 60fps
+        energy -= 100;
+        player.isAttacking = true;
+        setTimeout(() => player.isAttacking = false, 400);
+      }
     }
 
-    function updateHUD() {
-      document.getElementById('h-lives').innerText = '❤️'.repeat(Math.max(0, lives));
-      const m = Math.floor(roundTime / 60).toString().padStart(2, '0');
-      const s = (roundTime % 60).toString().padStart(2, '0');
-      document.getElementById('h-time').innerText = `${m}:${s}`;
-      document.getElementById('h-energy').innerText = energyScore;
-    }
-
-    function gameOver(win) {
-      gameState = 'over';
-      clearInterval(timerInterval);
-      const overlay = document.getElementById('overlay-screen');
-      overlay.style.display = 'flex';
-      overlay.querySelector('.welcome-title').innerText = win ? '¡VICTORIA!' : 'DERROTA';
-      overlay.querySelector('.welcome-sub').innerText = win ? `ENERGÍA TOTAL: ${energyScore}` : 'TE HAS QUEDADO SIN VIDAS';
-      document.getElementById('btn-start').innerText = 'JUGAR DE NUEVO';
-    }
-
-    // Dibujo del mapa estilo MOBA
-    function drawArena() {
-      // Césped
-      const grassGrad = ctx.createRadialGradient(400, 225, 60, 400, 225, 450);
-      grassGrad.addColorStop(0, '#173b2c');
-      grassGrad.addColorStop(0.6, '#0f291e');
-      grassGrad.addColorStop(1, '#081710');
-      ctx.fillStyle = grassGrad;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Pistas de adoquines
-      ctx.strokeStyle = '#2d3e42';
-      ctx.lineWidth = 26;
-      ctx.beginPath();
-      ctx.moveTo(100, 225);
-      ctx.lineTo(700, 225);
-      ctx.stroke();
-
-      // Lago / Fuente Estação Paulista
-      const lakeGrad = ctx.createLinearGradient(400, 160, 400, 290);
-      lakeGrad.addColorStop(0, '#00b4d8');
-      lakeGrad.addColorStop(1, '#0077b6');
-      ctx.fillStyle = lakeGrad;
-      ctx.strokeStyle = 'rgba(0, 210, 255, 0.7)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.ellipse(400, 225, 80, 50, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-    }
-
-    // Personaje Sander
-    function drawSander(x, y) {
-      sander.animTick += 0.08;
-      ctx.save();
-      ctx.translate(x, y);
-
-      // Aureola / Sombras
-      ctx.fillStyle = 'rgba(0, 210, 255, 0.25)';
-      ctx.beginPath();
-      ctx.ellipse(0, 14, 18, 7, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Chaqueta azul puffer
-      ctx.fillStyle = '#0f52ba';
-      ctx.fillRect(-10, -8, 20, 20);
-
-      // Cabeza y barba
-      ctx.fillStyle = '#c08642';
-      ctx.beginPath();
-      ctx.arc(0, -14, 8, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Barba oscura
-      ctx.fillStyle = '#1c1c1c';
-      ctx.beginPath();
-      ctx.arc(0, -12, 8, 0.2, Math.PI - 0.2);
-      ctx.fill();
-
-      // Auriculares luminosos cian
-      ctx.fillStyle = '#00f2fe';
-      ctx.fillRect(-11, -17, 3, 7);
-      ctx.fillRect(8, -17, 3, 7);
-
-      ctx.restore();
-    }
-
-    // Jefe
-    function drawBoss(x, y) {
-      boss.wingTick += 0.05;
-      ctx.save();
-      ctx.translate(x, y);
-
-      const isFrozen = sander.freezeTimer > 0;
-
-      // Anillo de peligro
-      ctx.strokeStyle = isFrozen ? '#00e5ff' : 'rgba(255, 119, 0, 0.5)';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(0, 0, boss.radius + 10, 0, Math.PI * 2);
-      ctx.stroke();
-
-      // Alas
-      const wingAngle = Math.sin(boss.wingTick) * 0.25;
-      ctx.fillStyle = isFrozen ? '#7ee8fa' : '#ff4444';
-      ctx.beginPath();
-      ctx.ellipse(-16, -6, 14, 6, -wingAngle, 0, Math.PI * 2);
-      ctx.ellipse(16, -6, 14, 6, wingAngle, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Cuerpo Mecha
-      ctx.fillStyle = isFrozen ? '#80d4ff' : '#47019c';
-      ctx.beginPath();
-      ctx.arc(0, 0, boss.radius, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.restore();
-    }
-
-    // Actualización de estado
     function update() {
-      if (gameState !== 'playing') return;
+      player.isMoving = false;
 
-      // Teclado manual (WASD / Flechas)
-      if (keys['w'] || keys['arrowup']) sander.y -= sander.speed;
-      if (keys['s'] || keys['arrowdown']) sander.y += sander.speed;
-      if (keys['a'] || keys['arrowleft']) sander.x -= sander.speed;
-      if (keys['d'] || keys['arrowright']) sander.x += sander.speed;
+      if (keys['ArrowUp'] || keys['w']) { player.y -= player.speed; player.isMoving = true; }
+      if (keys['ArrowDown'] || keys['s']) { player.y += player.speed; player.isMoving = true; }
+      if (keys['ArrowLeft'] || keys['a']) { player.x -= player.speed; player.isMoving = true; }
+      if (keys['ArrowRight'] || keys['d']) { player.x += player.speed; player.isMoving = true; }
 
-      // Movimiento por joystick virtual
-      sander.x += sander.vx;
-      sander.y += sander.vy;
+      // Límites de pantalla
+      player.x = Math.max(100, Math.min(canvas.width - 150, player.x));
+      player.y = Math.max(120, Math.min(canvas.height - 120, player.y));
 
-      // Límites del mapa
-      sander.x = Math.max(20, Math.min(canvas.width - 20, sander.x));
-      sander.y = Math.max(20, Math.min(canvas.height - 20, sander.y));
-
-      // Habilidad congelar timer
-      if (sander.freezeTimer > 0) sander.freezeTimer--;
-
-      // IA del Jefe (persigue a Sander si no está congelado)
-      if (sander.freezeTimer <= 0) {
-        const bdx = sander.x - boss.x;
-        const bdy = sander.y - boss.y;
-        const bdist = Math.sqrt(bdx * bdx + bdy * bdy);
-        if (bdist > 4) {
-          boss.x += (bdx / bdist) * boss.speed;
-          boss.y += (bdy / bdist) * boss.speed;
-        }
-
-        // Colisión con el Jefe
-        if (bdist < sander.radius + boss.radius) {
-          lives--;
-          playTone(180, 'sawtooth', 0.3, 0.25);
-          updateHUD();
-          sander.x = 160;
-          sander.y = 225;
-          boss.x = 640;
-          boss.y = 225;
-          if (lives <= 0) gameOver(false);
+      // Animación de Sprite (cuadrícula 4x4)
+      player.animTimer++;
+      if (player.animTimer % 8 === 0) {
+        if (player.isAttacking) {
+          player.frameX = 2; // Columna 3
+          player.frameY = 2; // Fila 3 (cuadro 11 con auras)
+        } else if (player.isMoving) {
+          player.frameX = (player.frameX + 1) % player.cols;
+          player.frameY = 0; // Fila 1 para caminar
+        } else {
+          player.frameX = 0;
+          player.frameY = 0; // Idle
         }
       }
 
-      // Orbes caminantes de energía
-      walkers.forEach((w) => {
-        w.x += w.vx;
-        w.y += w.vy;
-        if (w.x < 30 || w.x > canvas.width - 30) w.vx *= -1;
-        if (w.y < 30 || w.y > canvas.height - 30) w.vy *= -1;
+      // Descongelamiento
+      if (boss.frozen) {
+        boss.freezeTimer--;
+        if (boss.freezeTimer <= 0) boss.frozen = false;
+      }
 
-        // Recolección por parte de Sander
-        const dx = sander.x - w.x;
-        const dy = sander.y - w.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < sander.radius + w.radius) {
-          energyScore += 50;
-          playTone(600, 'sine', 0.15, 0.1);
-          updateHUD();
-          w.x = 140 + Math.random() * 520;
-          w.y = 60 + Math.random() * 330;
-          if (energyScore >= 1000) gameOver(true);
+      // Recolección de orbes
+      orbs.forEach(orb => {
+        if (orb.active) {
+          const dist = Math.hypot((player.x + 35) - orb.x, (player.y + 45) - orb.y);
+          if (dist < 40) {
+            orb.active = false;
+            energy = Math.min(1000, energy + 50);
+            document.getElementById('energy-val').innerText = `${energy}/1000`;
+          }
         }
       });
     }
 
-    // Dibujo general en cada frame
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawArena();
 
-      // Orbes
-      walkers.forEach((w) => {
-        w.float += 0.05;
-        ctx.fillStyle = w.color;
-        ctx.beginPath();
-        ctx.arc(w.x, w.y + Math.sin(w.float) * 3, w.radius, 0, Math.PI * 2);
-        ctx.fill();
+      // 1. Dibujar Mapa de Fondo
+      if (bgImg.complete && bgImg.naturalWidth !== 0) {
+        ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      // 2. Dibujar Orbes de Energía
+      orbs.forEach(orb => {
+        if (orb.active) {
+          ctx.beginPath();
+          ctx.arc(orb.x, orb.y, 14, 0, Math.PI * 2);
+          ctx.fillStyle = '#fbbf24';
+          ctx.shadowColor = '#f59e0b';
+          ctx.shadowBlur = 12;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
       });
 
-      drawBoss(boss.x, boss.y);
-      drawSander(sander.x, sander.y);
-      drawMinimap();
-    }
+      // 3. Dibujar Jefe (Némesis)
+      if (nemesisImg.complete && nemesisImg.naturalWidth !== 0) {
+        if (boss.frozen) {
+          ctx.save();
+          ctx.filter = 'brightness(1.2) hue-rotate(180deg)';
+          ctx.drawImage(nemesisImg, boss.x, boss.y, boss.width, boss.height);
+          ctx.restore();
+        } else {
+          ctx.drawImage(nemesisImg, boss.x, boss.y, boss.width, boss.height);
+        }
+      }
 
-    function drawMinimap() {
-      mCtx.fillStyle = '#0c1124';
-      mCtx.fillRect(0, 0, mCanvas.width, mCanvas.height);
+      // 4. Dibujar Sander con Spritesheet recortada
+      if (sanderSheet.complete && sanderSheet.naturalWidth !== 0) {
+        const spriteW = sanderSheet.naturalWidth / player.cols;
+        const spriteH = sanderSheet.naturalHeight / player.rows;
 
-      const sx = mCanvas.width / canvas.width;
-      const sy = mCanvas.height / canvas.height;
+        ctx.drawImage(
+          sanderSheet,
+          player.frameX * spriteW, player.frameY * spriteH, spriteW, spriteH, // Origen
+          player.x, player.y, player.width, player.height                      // Destino
+        );
+      } else {
+        ctx.fillStyle = '#0284c7';
+        ctx.fillRect(player.x, player.y, player.width, player.height);
+      }
 
-      // Jefe en minimapa (rojo o cian si congelado)
-      mCtx.fillStyle = sander.freezeTimer > 0 ? '#00e5ff' : '#ff3366';
-      mCtx.fillRect(boss.x * sx - 2, boss.y * sy - 2, 4, 4);
-
-      // Sander en minimapa (azul eléctrico)
-      mCtx.fillStyle = '#00d2ff';
-      mCtx.fillRect(sander.x * sx - 2, sander.y * sy - 2, 4, 4);
+      // 5. Círculo de congelamiento bajo el jefe
+      if (boss.frozen) {
+        ctx.beginPath();
+        ctx.ellipse(boss.x + boss.width / 2, boss.y + boss.height - 10, 50, 18, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+      }
     }
 
     function gameLoop() {
@@ -685,9 +332,7 @@
       requestAnimationFrame(gameLoop);
     }
 
-    // Iniciar loop
     requestAnimationFrame(gameLoop);
   </script>
 </body>
 </html>
-
